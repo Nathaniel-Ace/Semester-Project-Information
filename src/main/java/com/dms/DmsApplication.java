@@ -1,4 +1,4 @@
-package org.example.dms;
+package com.dms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
