@@ -1,1 +1,18 @@
+version: '3.8'
+
 services:
+  dms-server:
+    build: .
+    container_name: dms_server
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: "default"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - dms-network
+
+networks:
+  dms-network:
+    driver: bridge
