@@ -1,24 +1,39 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
+import Upload from './components/Upload';
+import Search from './components/Search';
+import Manage from './components/Manage';
 
 function App() {
+  const [activeComponent, setActiveComponent] = useState('upload');
+
+  const renderComponent = () => {
+    switch (activeComponent) {
+      case 'upload':
+        return <Upload />;
+      case 'search':
+        return <Search />;
+      case 'manage':
+        return <Manage />;
+      default:
+        return <Upload />;
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div className="app-background">
+        <header className="app-header">
+          <h1>Document Management System</h1>
+          <nav>
+            <button onClick={() => setActiveComponent('upload')}>Upload Document</button>
+            <button onClick={() => setActiveComponent('search')}>Search Documents</button>
+            <button onClick={() => setActiveComponent('manage')}>Manage Documents</button>
+          </nav>
+        </header>
+        <main>
+          {renderComponent()}
+        </main>
+      </div>
   );
 }
 
