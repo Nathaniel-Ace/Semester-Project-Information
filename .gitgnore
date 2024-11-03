@@ -1,0 +1,46 @@
+# Allgemeine Node.js Dateien und Ordner für das React-Frontend
+node_modules
+npm-debug.log
+yarn-error.log
+.yarn
+.yarn-cache
+.pnp.js
+.pnp.cjs
+.pnpm-debug.log
+
+# Build-Artefakte vom Frontend (wenn sie im Backend-Docker-Container nicht benötigt werden)
+build/
+dist/
+
+# React-Konfigurationsdateien, die im Image nicht notwendig sind
+*.env.local
+*.env.development
+*.env.production
+.env
+
+# IDE-spezifische Konfigurationsdateien
+.vscode/
+.idea/
+*.iml
+
+# Allgemeine Systemdateien
+.DS_Store
+Thumbs.db
+
+# Git-Dateien
+.git
+.gitignore
+
+# Java und Spring-Boot-spezifische Dateien
+*.jar
+*.war
+*.iml
+.mvn/
+target/  # Build-Output-Verzeichnis von Maven, das im Image nicht benötigt wird
+.gradle/
+build/   # Falls eine build-Direktive im Backend vorhanden ist
+
+# Lokale Entwicklungsdateien und Umgebungsvariablen
+*.env
+.env.*   # Schließt andere Umgebungsdateien ein, z.B. .env.local
+*.properties  # Z.B. application-local.properties
