@@ -3,16 +3,21 @@ version: '3.8'
 services:
   dms-server:
     build:
-      context: ./backend  # Zeigt auf das Backend-Verzeichnis
+      context: ./backend
     container_name: dms_server
     ports:
-      - "8080:8080"       # Exponiert den Port 8080 für das Backend
+      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: "default"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     volumes:
       - ./logs:/app/logs
     networks:
       - dms-network
+    depends_on:
+      - database
 
   frontend:
     build:
@@ -26,6 +31,21 @@ services:
     networks:
       - dms-network
 
+  database:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dms-network
+
 networks:
   dms-network:
     driver: bridge
+
+volumes:
+  postgres_data:
