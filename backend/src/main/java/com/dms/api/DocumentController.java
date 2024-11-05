@@ -1,6 +1,6 @@
 package com.dms.api;
 
-import com.dms.persistence.entities.Document;
+import com.dms.persistence.entity.Document;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
