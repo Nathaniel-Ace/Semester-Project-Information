@@ -1,4 +1,4 @@
-package com.dms.persistence.dto;
+package com.dms.service.dto;
 import lombok.*;
 
 @Getter
