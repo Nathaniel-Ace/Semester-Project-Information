@@ -1,6 +1,6 @@
 package com.dms.service.mapper;
 
-import com.dms.persistence.dto.DocumentDTO;
+import com.dms.service.dto.DocumentDTO;
 import com.dms.persistence.entity.Document;
 import org.mapstruct.Mapper;
 
@@ -11,6 +11,6 @@ public interface DocumentMapper {
     DocumentDTO toDTO(Document document);
     Document toEntity(DocumentDTO documentDTO);
 
-    Iterable<com.dms.persistence.dto.DocumentDTO> toDTOList(List<Document> all);
+    Iterable<DocumentDTO> toDTOList(List<Document> all);
 }
 

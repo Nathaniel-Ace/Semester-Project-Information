@@ -2,7 +2,7 @@ package com.dms.service;
 
 import com.dms.persistence.repo.DocumentRepo;
 import com.dms.service.mapper.DocumentMapper;
-import com.dms.persistence.dto.DocumentDTO;
+import com.dms.service.dto.DocumentDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

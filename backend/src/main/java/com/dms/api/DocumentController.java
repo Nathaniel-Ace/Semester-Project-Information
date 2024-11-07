@@ -4,7 +4,7 @@ import com.dms.service.DocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.dms.persistence.dto.DocumentDTO;
+import com.dms.service.dto.DocumentDTO;
 
 @RestController
 @RequiredArgsConstructor
