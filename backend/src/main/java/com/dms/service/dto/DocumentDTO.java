@@ -8,11 +8,8 @@ import lombok.*;
 @Builder
 @Data
 public class DocumentDTO {
-    private Long id;
-    private String title;
-    private String author;
-    private String content;
-
-    // Getter und Setter
+    private Long id;              // Unique identifier for the document
+    private String title;          // Document title or name
+    private String description;   // Optional description of the document
+    private String fileUrl;       // URL of the uploaded file in the cloud
 }
-
