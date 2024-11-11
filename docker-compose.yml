@@ -12,27 +12,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD}
     volumes:
       - ./logs:/app/logs
     networks:
       - dms-network
     depends_on:
       - database
+      - rabbitmq
 
-  frontend:
-    build:
-      context: ./frontend  # Zeigt auf das Hauptverzeichnis des Frontends
-      dockerfile: nginx/Dockerfile  # Zeigt auf das Dockerfile im nginx-Verzeichnis
-    container_name: frontend_nginx
-    ports:
-      - "80:80"                 # Exponiert den Port 80 für Nginx
-    depends_on:
-      - dms-server              # Wartet, bis das Backend läuft
-    networks:
-      - dms-network
-    environment:
-      - NODE_ENV=production    # Setze das Produktionsumfeld für das Frontend
-    restart: always            # Stelle sicher, dass der Container immer wieder neu gestartet wird, falls er ausfällt
+
 
   database:
     image: postgres:latest
@@ -43,6 +35,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dms-network
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # RabbitMQ (Messaging Port)
+      - "15672:15672"  # RabbitMQ Management UI
     networks:
       - dms-network
 
