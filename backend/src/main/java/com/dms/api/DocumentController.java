@@ -1,58 +1,81 @@
 package com.dms.api;
 
-import com.dms.persistence.entities.Document;
-import org.springframework.http.HttpStatus;
+import com.dms.exception.DocumentStorageException;
+import com.dms.service.DocumentService;
+import com.dms.messaging.MessageProducer;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.dms.service.dto.DocumentDTO;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/documents")
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/documents")
 public class DocumentController {
+    private final DocumentService documentService;
+    private final MessageProducer messageProducer;
 
-    // Hardcoded list of documents
-    private final List<Document> documents = Arrays.asList(
-            new Document(1L, "Document 1", "This is document 1"),
-            new Document(2L, "Document 2", "This is document 2"),
-            new Document(3L, "Document 3", "This is document 3")
-    );
+    private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
-    // Save a new document (hardcoded response)
-    @PostMapping("/save")
-    public ResponseEntity<Document> saveDocument(@RequestBody Document document) {
-        // Here, return a hardcoded document as a response
-        Document hardcodedDocument = new Document(4L, "Hardcoded Document", "This is a hardcoded response.");
-        return new ResponseEntity<>(hardcodedDocument, HttpStatus.CREATED);
-    }
+    @PostMapping("/upload")
+    public ResponseEntity<DocumentDTO> saveDocument(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title) {
 
-    // Get all documents (hardcoded response)
-    @GetMapping("/all")
-    public ResponseEntity<List<Document>> findAllDocuments() {
-        // Return the hardcoded list of documents
-        return new ResponseEntity<>(documents, HttpStatus.OK);
-    }
+        DocumentDTO documentDTO = new DocumentDTO();
+        documentDTO.setTitle(title);
 
-    // Get a document by ID (hardcoded response)
-    @GetMapping("/{id}")
-    public ResponseEntity<Document> findDocumentById(@PathVariable Long id) {
-        // Look for the document in the hardcoded list
-        Optional<Document> document = documents.stream().filter(doc -> doc.getId().equals(id)).findFirst();
-        return document.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
+        logger.info("Saving document with title: {}", title);
+        try {
+            // Datei speichern
+            DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
 
-    // Delete a document by ID (hardcoded response)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocumentById(@PathVariable Long id) {
-        // Simulate the delete operation (no real deletion happens in hardcoded responses)
-        Optional<Document> document = documents.stream().filter(doc -> doc.getId().equals(id)).findFirst();
-        if (document.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            // Nachricht an RabbitMQ senden
+            messageProducer.sendMessage("documentExchange", "documentRoutingKey",
+                    "Document uploaded: " + savedDocument.getTitle());
+
+            logger.info("Document saved successfully");
+            return ResponseEntity.ok(savedDocument);
+        } catch (Exception e) {
+            logger.error("Error saving document: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to save document", e);
         }
     }
 
+
+    @GetMapping("/find/all")
+    public ResponseEntity<Iterable<DocumentDTO>> findAllDocuments() {
+        return ResponseEntity.ok(documentService.findAllDocuments());
+    }
+
+
+    @GetMapping("/find/{id}")
+    public ResponseEntity<DocumentDTO> findDocumentById(@PathVariable Long id) {
+        return ResponseEntity.ok(documentService.findDocumentById(id));
+    }
+
+    @GetMapping("/find/{name}")
+    public ResponseEntity<DocumentDTO> findDocumentByName(@PathVariable String name) {
+        return ResponseEntity.ok(documentService.findDocumentByName(name));
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<DocumentDTO> updateDocument(@PathVariable Long id, @RequestBody DocumentDTO updatedDocument) {
+        return ResponseEntity.ok(documentService.updateDocument(id, updatedDocument));
+    }
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteDocumentById(@PathVariable Long id) {
+        try {
+            documentService.deleteDocumentById(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
