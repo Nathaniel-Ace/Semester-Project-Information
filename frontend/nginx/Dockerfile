@@ -1,11 +1,25 @@
-# Verwende das Nginx-Image als Basis
+# Build-Phase
+FROM node:18 AS build
+WORKDIR /app
+
+# Kopiere nur die notwendigen Dateien, um das Docker-Image effizienter zu machen
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Kopiere den restlichen Code
+COPY . .
+
+# Baue das Projekt
+RUN npm run build
+
+# Nginx-Phase
 FROM nginx:alpine
 
-# Kopiere die Nginx-Konfiguration in den Container
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+# Kopiere die gebauten Dateien aus der Build-Phase
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Kopiere den Build-Output der React-App in das Verzeichnis, das Nginx bedient
-COPY ./build/ /usr/share/nginx/html
-
-# Exponiere den Port 80
+# Exponiere Port 80
 EXPOSE 80
+
+# Starte Nginx im Vordergrund
+CMD ["nginx", "-g", "daemon off;"]
