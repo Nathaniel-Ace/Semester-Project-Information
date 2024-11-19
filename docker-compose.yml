@@ -29,7 +29,7 @@ services:
       - rabbitmq
       - minio
 
-
+#TODO: frontend muss noch hinzugefügt werden
 
   database:
     image: postgres:latest
@@ -56,8 +56,8 @@ services:
     image: minio/minio:latest
     container_name: minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     command: server /data --console-address ":9090"
     ports:
       - "9000:9000"   # MinIO API
