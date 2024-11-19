@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+
 @RequiredArgsConstructor
 @Service
 public class DocumentService {
@@ -16,25 +18,40 @@ public class DocumentService {
     private final DocumentMapper documentMapper;
     private final DocumentRepo documentRepo;
     private final MessageProducer messageProducer;
+    private final MinioService minioService;
 
     public DocumentDTO saveDocument(DocumentDTO documentDTO, MultipartFile file) {
-        // 1. Simulate a file URL response for now
-        String simulatedUrl = "http://localhost:8080/files/" + file.getOriginalFilename();
-        documentDTO.setFileUrl(simulatedUrl);
+        try {
+            // 1. Upload file to MinIO
+            String fileName = file.getOriginalFilename();
+            InputStream inputStream = file.getInputStream();
+            long fileSize = file.getSize();
+            String contentType = file.getContentType();
 
-        // 2. Convert DTO to Entity and save it
-        Document document = documentMapper.toEntity(documentDTO);
-        Document savedDocument = documentRepo.save(document);
+            String bucketName = "mindease-bucket";
+            minioService.uploadFile(bucketName, fileName, inputStream, fileSize, contentType);
 
-        // 3. Prepare the message for RabbitMQ
-        String message = String.format("Document uploaded: [ID: %d, Title: %s]",
-                savedDocument.getId(), savedDocument.getTitle());
+            // 2. Generate URL for accessing the uploaded file
+            String fileUrl = String.format("http://localhost:9000/%s/%s", bucketName, fileName);
+            documentDTO.setFileUrl(fileUrl);
 
-        // 4. Send message to RabbitMQ
-        messageProducer.sendMessage("documentExchange", "documentRoutingKey", message);
+            // 3. Convert DTO to Entity and save it in the database
+            Document document = documentMapper.toEntity(documentDTO);
+            Document savedDocument = documentRepo.save(document);
 
-        // 5. Return the saved document DTO
-        return documentMapper.toDTO(savedDocument);
+            // 4. Prepare a message for RabbitMQ
+            String message = String.format("Document uploaded: [ID: %d, Title: %s]",
+                    savedDocument.getId(), savedDocument.getTitle());
+
+            // 5. Send the message to RabbitMQ
+            messageProducer.sendMessage("documentExchange", "documentRoutingKey", message);
+
+            // 6. Return the saved document DTO
+            return documentMapper.toDTO(savedDocument);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload document", e);
+        }
     }
 
     public Iterable<DocumentDTO> findAllDocuments() {
