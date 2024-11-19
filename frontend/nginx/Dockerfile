@@ -7,5 +7,5 @@ COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 # Kopiere den Build-Output der React-App in das Verzeichnis, das Nginx bedient
 COPY ./build/ /usr/share/nginx/html
 
-# Exponiere den Port 80
-EXPOSE 80
+# Exponiere den Port 81
+EXPOSE 81
