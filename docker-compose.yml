@@ -24,6 +24,19 @@ services:
       - database
       - rabbitmq
 
+  frontend:
+    build:
+      context: ./frontend  # Zeigt auf das Hauptverzeichnis des Frontends
+    container_name: frontend_nginx
+    ports:
+      - "80:80"                 # Exponiert den Port 80 für Nginx
+    depends_on:
+      - dms-server              # Wartet, bis das Backend läuft
+    networks:
+      - dms-network
+    environment:
+      - NODE_ENV=production    # Setze das Produktionsumfeld für das Frontend
+    restart: always            # Stelle sicher, dass der Container immer wieder neu gestartet wird, falls er ausfällt
 
 
   database:
