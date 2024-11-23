@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   dms-server:
@@ -30,6 +29,20 @@ services:
       - minio
 
 #TODO: frontend muss noch hinzugefügt werden
+  frontend:
+    build:
+      context: ./frontend  # Zeigt auf das Hauptverzeichnis des Frontends
+      dockerfile: nginx/Dockerfile  # Zeigt auf das Dockerfile im nginx-Verzeichnis
+    container_name: frontend_nginx
+    ports:
+      - "80:80"                 # Exponiert den Port 80 für Nginx
+    depends_on:
+      - dms-server              # Wartet, bis das Backend läuft
+    networks:
+      - dms-network
+    environment:
+      - NODE_ENV=production    # Setze das Produktionsumfeld für das Frontend
+    restart: always
 
   database:
     image: postgres:latest

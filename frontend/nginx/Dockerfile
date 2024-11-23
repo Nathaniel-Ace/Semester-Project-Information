@@ -3,11 +3,11 @@ FROM node:18 AS build
 WORKDIR /app
 
 # Kopiere nur die notwendigen Dateien, um das Docker-Image effizienter zu machen
-COPY package.json package-lock.json ./
+COPY ../package.json package-lock.json ./
 RUN npm install
 
 # Kopiere den restlichen Code
-COPY . .
+COPY .. .
 
 # Baue das Projekt
 RUN npm run build
