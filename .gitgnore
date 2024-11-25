@@ -1,0 +1,33 @@
+# Allgemeine Node.js Dateien und Ordner für das React-Frontend
+frontend/node_modules/
+frontend/npm-debug.log
+frontend/yarn-error.log
+frontend/.yarn/
+frontend/.yarn-cache/
+
+# Build-Artefakte vom Frontend und Backend
+frontend/build/
+frontend/dist/
+backend/target/
+backend/build/
+
+# React-spezifische Umgebungsdateien
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+.env
+
+# IDE-spezifische Dateien
+.idea/
+.vscode/
+
+# Allgemeine Systemdateien
+.DS_Store
+Thumbs.db
+
+# Java und Spring-Boot spezifische Dateien
+backend/.mvn/
+backend/.gradle/
+*.jar
+*.war
+*.iml

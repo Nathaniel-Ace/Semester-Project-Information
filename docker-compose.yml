@@ -1,0 +1,89 @@
+
+services:
+  dms-server:
+    build:
+      context: ./backend
+    container_name: dms_server
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: "default"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: mindease-bucket
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - dms-network
+    depends_on:
+      - database
+      - rabbitmq
+      - minio
+
+#TODO: frontend muss noch hinzugefügt werden
+  frontend:
+    build:
+      context: ./frontend  # Zeigt auf das Hauptverzeichnis des Frontends
+      dockerfile: nginx/Dockerfile  # Zeigt auf das Dockerfile im nginx-Verzeichnis
+    container_name: frontend_nginx
+    ports:
+      - "80:80"                 # Exponiert den Port 80 für Nginx
+    depends_on:
+      - dms-server              # Wartet, bis das Backend läuft
+    networks:
+      - dms-network
+    environment:
+      - NODE_ENV=production    # Setze das Produktionsumfeld für das Frontend
+    restart: always
+
+  database:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dms-network
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # RabbitMQ (Messaging Port)
+      - "15672:15672"  # RabbitMQ Management UI
+    networks:
+      - dms-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    command: server /data --console-address ":9090"
+    ports:
+      - "9000:9000"   # MinIO API
+      - "9090:9090"   # MinIO Web UI
+    volumes:
+      - minio_data:/data
+    networks:
+      - dms-network
+
+networks:
+  dms-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
