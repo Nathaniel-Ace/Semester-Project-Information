@@ -28,7 +28,6 @@ services:
       - rabbitmq
       - minio
 
-#TODO: frontend muss noch hinzugefügt werden
   frontend:
     build:
       context: ./frontend  # Zeigt auf das Hauptverzeichnis des Frontends
