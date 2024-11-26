@@ -79,6 +79,38 @@ services:
     networks:
       - dms-network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - dms-network
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  ocr-service:
+    build:
+      context: ./ocr-service
+    container_name: ocr_service
+    ports:
+      - "8082:8082"
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      RABBITMQ_HOST: rabbitmq
+      ELASTICSEARCH_HOST: http://elasticsearch:9200
+    depends_on:
+      - rabbitmq
+      - minio
+      - elasticsearch
+    networks:
+      - dms-network
+
 networks:
   dms-network:
     driver: bridge
@@ -86,3 +118,4 @@ networks:
 volumes:
   postgres_data:
   minio_data:
+  es_data:
