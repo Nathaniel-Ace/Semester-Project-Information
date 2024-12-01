@@ -35,10 +35,6 @@ public class DocumentController {
             // Datei speichern
             DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
 
-            // Nachricht an RabbitMQ senden
-            messageProducer.sendMessage("documentExchange", "documentRoutingKey",
-                    "Document uploaded: " + savedDocument.getTitle());
-
             logger.info("Document saved successfully");
             return ResponseEntity.ok(savedDocument);
         } catch (Exception e) {
