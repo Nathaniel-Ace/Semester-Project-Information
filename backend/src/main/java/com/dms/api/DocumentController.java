@@ -2,7 +2,6 @@ package com.dms.api;
 
 import com.dms.exception.DocumentStorageException;
 import com.dms.service.DocumentService;
-import com.dms.messaging.MessageProducer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 @CrossOrigin(origins = "http://localhost") // Erlaubt nur Anfragen von diesem Origin
 public class DocumentController {
     private final DocumentService documentService;
-    private final MessageProducer messageProducer;
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
@@ -34,6 +32,9 @@ public class DocumentController {
         try {
             // Datei speichern
             DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
+
+            // OCR-Job initiieren
+            documentService.processOCRJob(savedDocument, file);
 
             logger.info("Document saved successfully");
             return ResponseEntity.ok(savedDocument);

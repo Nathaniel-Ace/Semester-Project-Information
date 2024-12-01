@@ -1,8 +1,10 @@
 package com.dms.service;
 
 import com.dms.messaging.MessageProducer;
+import com.dms.messaging.OCRJobProducer;
 import com.dms.persistence.entity.Document;
 import com.dms.persistence.repo.DocumentRepo;
+import com.dms.service.dto.OCRJobDTO;
 import com.dms.service.mapper.DocumentMapper;
 import com.dms.service.dto.DocumentDTO;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,19 @@ public class DocumentService {
     private final DocumentRepo documentRepo;
     private final MessageProducer messageProducer;
     private final MinioService minioService;
+    private final OCRJobProducer ocrJobProducer;
+
+    public void processOCRJob(DocumentDTO documentDTO, MultipartFile file) {
+        // OCRJobDTO erstellen
+        OCRJobDTO ocrJobDTO = new OCRJobDTO();
+        ocrJobDTO.setDocumentId(documentDTO.getId());
+        ocrJobDTO.setDocumentTitle(documentDTO.getTitle());
+        ocrJobDTO.setFileUrl(documentDTO.getFileUrl());
+        ocrJobDTO.setMetadata("OCR Metadata example");
+
+        // OCR-Job an RabbitMQ senden
+        ocrJobProducer.sendOCRJob("OCR_QUEUE", ocrJobDTO);
+    }
 
     public DocumentDTO saveDocument(DocumentDTO documentDTO, MultipartFile file) {
         try {
@@ -83,4 +98,5 @@ public class DocumentService {
             throw new IllegalArgumentException("Document with ID " + id + " does not exist.");
         }
     }
+
 }
