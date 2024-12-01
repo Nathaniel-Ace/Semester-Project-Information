@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 function Upload() {
     const [file, setFile] = useState(null);
     const [title, setTitle] = useState('');
+    const [uploadResult, setUploadResult] = useState(null); // Für die Upload-Antwort
 
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
@@ -36,9 +37,12 @@ function Upload() {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                setUploadResult(data); // Antwort speichern
                 alert('File uploaded successfully!');
             } else {
-                alert('File upload failed!');
+                const errorMessage = await response.text();
+                alert(`File upload failed: ${errorMessage}`);
             }
         } catch (error) {
             console.error('Error uploading file:', error);
@@ -49,9 +53,27 @@ function Upload() {
     return (
         <div className="component-container">
             <h2>Upload a New Document</h2>
-            <input type="text" placeholder="Enter title" value={title} onChange={handleTitleChange} />
-            <input type="file" accept=".pdf" onChange={handleFileChange} />
+            <input
+                type="text"
+                placeholder="Enter title"
+                value={title}
+                onChange={handleTitleChange}
+            />
+            <input
+                type="file"
+                accept=".pdf"
+                onChange={handleFileChange}
+            />
             <button className="btn" onClick={handleUpload}>Upload</button>
+
+            {uploadResult && (
+                <div className="upload-result">
+                    <h3>Upload Details:</h3>
+                    <p><strong>ID:</strong> {uploadResult.id}</p>
+                    <p><strong>Title:</strong> {uploadResult.title}</p>
+                    <p><strong>File URL:</strong> <a href={uploadResult.fileUrl} target="_blank" rel="noopener noreferrer">{uploadResult.fileUrl}</a></p>
+                </div>
+            )}
         </div>
     );
 }
