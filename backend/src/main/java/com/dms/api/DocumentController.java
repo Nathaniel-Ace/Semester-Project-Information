@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/documents")
+@CrossOrigin(origins = "http://localhost") // Erlaubt nur Anfragen von diesem Origin
 public class DocumentController {
     private final DocumentService documentService;
     private final MessageProducer messageProducer;
