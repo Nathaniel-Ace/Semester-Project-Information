@@ -9,16 +9,20 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue documentQueue() {
+        System.out.println("Queue 'documentQueue' wird erstellt.");
         return new Queue("documentQueue", false);
     }
 
     @Bean
     public DirectExchange directExchange() {
+        System.out.println("Exchange 'documentExchange' wird erstellt.");
         return new DirectExchange("documentExchange");
     }
 
     @Bean
     public Binding binding(Queue documentQueue, DirectExchange directExchange) {
+        System.out.println("Binding für 'documentQueue' und 'documentExchange' wird erstellt.");
         return BindingBuilder.bind(documentQueue).to(directExchange).with("documentRoutingKey");
     }
 }
+
