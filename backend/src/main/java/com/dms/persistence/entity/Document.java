@@ -26,6 +26,9 @@ public class Document {
     @Column(name = "file_url", nullable = false)
     private String fileUrl;
 
+    @Column(name = "page_count", nullable = false)
+    private Integer pageCount;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -42,6 +45,4 @@ public class Document {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-
 }
