@@ -28,21 +28,16 @@ public class DocumentController {
 
         DocumentDTO documentDTO = new DocumentDTO();
         documentDTO.setTitle(title);
+        documentDTO.setPageCount(pageCount); // Seitenanzahl hinzufügen
 
         logger.info("Saving document with title: {} and page count: {}", title, pageCount);
 
         try {
             // Datei speichern
-            DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file, pageCount);
-
-            // Seitenanzahl im DTO setzen (falls benötigt)
-            savedDocument.setPageCount(pageCount);
-
-            // Optional: Seitenanzahl in der Datenbank speichern
-            documentService.updateDocument(savedDocument.getId(), savedDocument);
+            DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
 
             // OCR-Job initiieren
-            documentService.processOCRJob(savedDocument, file);
+            documentService.processOCRJob(savedDocument);
 
             logger.info("Document saved successfully with page count: {}", pageCount);
             return ResponseEntity.ok(savedDocument);

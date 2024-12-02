@@ -11,7 +11,6 @@ public class OCRJobMapper {
         ocrJob.setDocumentId(dto.getDocumentId());
         ocrJob.setDocumentTitle(dto.getDocumentTitle());
         ocrJob.setFileUrl(dto.getFileUrl());
-        ocrJob.setMetadata(dto.getMetadata());
         return ocrJob;
     }
 
@@ -21,7 +20,6 @@ public class OCRJobMapper {
         dto.setDocumentId(ocrJob.getDocumentId());
         dto.setDocumentTitle(ocrJob.getDocumentTitle());
         dto.setFileUrl(ocrJob.getFileUrl());
-        dto.setMetadata(ocrJob.getMetadata());
         return dto;
     }
 }

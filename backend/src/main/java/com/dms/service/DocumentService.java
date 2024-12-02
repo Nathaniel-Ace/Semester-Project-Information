@@ -23,19 +23,19 @@ public class DocumentService {
     private final MinioService minioService;
     private final OCRJobProducer ocrJobProducer;
 
-    public void processOCRJob(DocumentDTO documentDTO, MultipartFile file) {
+    public void processOCRJob(DocumentDTO documentDTO) {
         // OCRJobDTO erstellen
         OCRJobDTO ocrJobDTO = new OCRJobDTO();
         ocrJobDTO.setDocumentId(documentDTO.getId());
         ocrJobDTO.setDocumentTitle(documentDTO.getTitle());
         ocrJobDTO.setFileUrl(documentDTO.getFileUrl());
-        ocrJobDTO.setMetadata("OCR Metadata example");
+        ocrJobDTO.setPageCount(documentDTO.getPageCount());
 
         // OCR-Job an RabbitMQ senden
         ocrJobProducer.sendOCRJob("OCR_QUEUE", ocrJobDTO);
     }
 
-    public DocumentDTO saveDocument(DocumentDTO documentDTO, MultipartFile file, int pageCount) {
+    public DocumentDTO saveDocument(DocumentDTO documentDTO, MultipartFile file) {
         try {
             // 1. Datei in MinIO hochladen
             String fileName = file.getOriginalFilename();
@@ -50,21 +50,18 @@ public class DocumentService {
             String fileUrl = String.format("http://localhost:9000/%s/%s", bucketName, fileName);
             documentDTO.setFileUrl(fileUrl);
 
-            // 3. Seitenanzahl hinzufügen
-            documentDTO.setPageCount(pageCount);
-
-            // 4. DTO in Entity konvertieren und in der Datenbank speichern
+            // 3. DTO in Entity konvertieren und in der Datenbank speichern
             Document document = documentMapper.toEntity(documentDTO);
             Document savedDocument = documentRepo.save(document);
 
-            // 5. RabbitMQ-Nachricht vorbereiten
+            // 4. RabbitMQ-Nachricht vorbereiten
             String message = String.format("Document uploaded: [ID: %d, Title: %s, Pages: %d]",
-                    savedDocument.getId(), savedDocument.getTitle(), savedDocument.getPageCount());
+                    savedDocument.getId(), savedDocument.getTitle(), documentDTO.getPageCount());
 
-            // 6. Nachricht an RabbitMQ senden
+            // 5. Nachricht an RabbitMQ senden
             messageProducer.sendMessage("documentExchange", "documentRoutingKey", message);
 
-            // 7. Gespeichertes Dokument als DTO zurückgeben
+            // 6. Gespeichertes Dokument als DTO zurückgeben
             return documentMapper.toDTO(savedDocument);
 
         } catch (Exception e) {
@@ -90,6 +87,7 @@ public class DocumentService {
             document.setTitle(updatedDocument.getTitle());
             document.setFileUrl(updatedDocument.getFileUrl());
             document.setDescription(updatedDocument.getDescription());
+            document.setPageCount(updatedDocument.getPageCount());
             return documentMapper.toDTO(documentRepo.save(document));
         }).orElse(null);
     }
