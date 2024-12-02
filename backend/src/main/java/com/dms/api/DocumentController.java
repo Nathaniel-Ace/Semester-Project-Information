@@ -23,26 +23,35 @@ public class DocumentController {
     @PostMapping("/upload")
     public ResponseEntity<DocumentDTO> saveDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("title") String title) {
+            @RequestParam("title") String title,
+            @RequestParam("pageCount") int pageCount) { // Neuer Parameter pageCount
 
         DocumentDTO documentDTO = new DocumentDTO();
         documentDTO.setTitle(title);
 
-        logger.info("Saving document with title: {}", title);
+        logger.info("Saving document with title: {} and page count: {}", title, pageCount);
+
         try {
             // Datei speichern
-            DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
+            DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file, pageCount);
+
+            // Seitenanzahl im DTO setzen (falls benötigt)
+            savedDocument.setPageCount(pageCount);
+
+            // Optional: Seitenanzahl in der Datenbank speichern
+            documentService.updateDocument(savedDocument.getId(), savedDocument);
 
             // OCR-Job initiieren
             documentService.processOCRJob(savedDocument, file);
 
-            logger.info("Document saved successfully");
+            logger.info("Document saved successfully with page count: {}", pageCount);
             return ResponseEntity.ok(savedDocument);
         } catch (Exception e) {
             logger.error("Error saving document: {}", e.getMessage());
             throw new DocumentStorageException("Failed to save document", e);
         }
     }
+
 
 
     @GetMapping("/find/all")

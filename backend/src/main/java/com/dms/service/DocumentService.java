@@ -35,9 +35,9 @@ public class DocumentService {
         ocrJobProducer.sendOCRJob("OCR_QUEUE", ocrJobDTO);
     }
 
-    public DocumentDTO saveDocument(DocumentDTO documentDTO, MultipartFile file) {
+    public DocumentDTO saveDocument(DocumentDTO documentDTO, MultipartFile file, int pageCount) {
         try {
-            // 1. Upload file to MinIO
+            // 1. Datei in MinIO hochladen
             String fileName = file.getOriginalFilename();
             InputStream inputStream = file.getInputStream();
             long fileSize = file.getSize();
@@ -46,28 +46,32 @@ public class DocumentService {
             String bucketName = "mindease-bucket";
             minioService.uploadFile(bucketName, fileName, inputStream, fileSize, contentType);
 
-            // 2. Generate URL for accessing the uploaded file
+            // 2. URL für den Zugriff auf die hochgeladene Datei generieren
             String fileUrl = String.format("http://localhost:9000/%s/%s", bucketName, fileName);
             documentDTO.setFileUrl(fileUrl);
 
-            // 3. Convert DTO to Entity and save it in the database
+            // 3. Seitenanzahl hinzufügen
+            documentDTO.setPageCount(pageCount);
+
+            // 4. DTO in Entity konvertieren und in der Datenbank speichern
             Document document = documentMapper.toEntity(documentDTO);
             Document savedDocument = documentRepo.save(document);
 
-            // 4. Prepare a message for RabbitMQ
-            String message = String.format("Document uploaded: [ID: %d, Title: %s]",
-                    savedDocument.getId(), savedDocument.getTitle());
+            // 5. RabbitMQ-Nachricht vorbereiten
+            String message = String.format("Document uploaded: [ID: %d, Title: %s, Pages: %d]",
+                    savedDocument.getId(), savedDocument.getTitle(), savedDocument.getPageCount());
 
-            // 5. Send the message to RabbitMQ
+            // 6. Nachricht an RabbitMQ senden
             messageProducer.sendMessage("documentExchange", "documentRoutingKey", message);
 
-            // 6. Return the saved document DTO
+            // 7. Gespeichertes Dokument als DTO zurückgeben
             return documentMapper.toDTO(savedDocument);
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload document", e);
         }
     }
+
 
     public Iterable<DocumentDTO> findAllDocuments() {
         return documentMapper.toDTOList(documentRepo.findAll());
