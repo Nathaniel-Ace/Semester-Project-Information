@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class OCRJobDTO {
-    private Long documentId;
-    private String documentTitle;
-    private String fileUrl;
-    private String metadata;
+    private Long documentId;         // Eindeutige ID des Dokuments
+    private String documentTitle;   // Titel des Dokuments
+    private String fileUrl;         // URL des Dokuments in MinIO
+    private int pageCount;          // Anzahl der Seiten im Dokument
 }

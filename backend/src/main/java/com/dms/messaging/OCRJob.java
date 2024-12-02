@@ -9,4 +9,5 @@ public class OCRJob implements Serializable {
     private String documentTitle;
     private String fileUrl;
     private String metadata;
+    private int pageCount;
 }
