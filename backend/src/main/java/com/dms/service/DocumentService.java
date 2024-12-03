@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -86,11 +87,23 @@ public class DocumentService {
         return documentRepo.findById(id).map(document -> {
             document.setTitle(updatedDocument.getTitle());
             document.setFileUrl(updatedDocument.getFileUrl());
-            document.setDescription(updatedDocument.getDescription());
+            document.setContent(updatedDocument.getDescription());
             document.setPageCount(updatedDocument.getPageCount());
             return documentMapper.toDTO(documentRepo.save(document));
         }).orElse(null);
     }
+
+    public void updateDocumentContent(Long documentId, String ocrText) {
+        documentRepo.findById(documentId).ifPresentOrElse(document -> {
+            document.setContent(ocrText);
+            document.setUpdatedAt(LocalDateTime.now()); // Aktualisiere updatedAt
+            documentRepo.save(document);
+            System.out.println("Document content updated successfully for ID: " + documentId);
+        }, () -> {
+            System.err.println("Document with ID " + documentId + " not found.");
+        });
+    }
+
 
     public void deleteDocumentById(Long id) {
         // Check if the document exists

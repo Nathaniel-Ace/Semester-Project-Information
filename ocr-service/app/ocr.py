@@ -68,7 +68,7 @@ def process_ocr(pdf_path, page_count=None, document_id=None):
         full_text = ""
         for i, image in enumerate(images):
             text = pytesseract.image_to_string(image)
-            print(f"Scanned text for page {i + 1}:\n{text}\n")
+            # print(f"Scanned text for page {i + 1}:\n{text}\n")
             full_text += text + "\n"
 
         print(f"OCR process completed successfully for file: {pdf_path}")

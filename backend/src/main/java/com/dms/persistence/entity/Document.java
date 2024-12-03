@@ -21,7 +21,8 @@ public class Document {
     @Column(nullable = false)
     private String title;
 
-    private String description;
+    @Column(columnDefinition = "text")
+    private String content;
 
     @Column(name = "file_url", nullable = false)
     private String fileUrl;

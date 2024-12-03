@@ -101,6 +101,7 @@ services:
       - dms-network
     depends_on:
       - rabbitmq
+      - dms-server
       - minio
     restart: always
     tty: true
