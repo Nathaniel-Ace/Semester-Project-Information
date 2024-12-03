@@ -15,10 +15,12 @@ services:
       SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
       SPRING_RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME}
       SPRING_RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD}
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET: mindease-bucket
+      MINIO_ENDPOINT: ${MINIO_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT}
     volumes:
       - ./logs:/app/logs
     networks:
@@ -93,18 +95,44 @@ services:
       RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
       RABBITMQ_USERNAME: ${SPRING_RABBITMQ_USERNAME}
       RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD}
-      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ENDPOINT: ${MINIO_URL}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: ${MINIO_BUCKET}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_PORT}
     networks:
       - dms-network
     depends_on:
       - rabbitmq
       - dms-server
       - minio
+      - elasticsearch
     restart: always
     tty: true
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    networks:
+      - dms-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.1
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_URL}
+    ports:
+      - "9092:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - dms-network
 
 networks:
   dms-network:

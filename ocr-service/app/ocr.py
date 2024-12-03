@@ -1,4 +1,5 @@
 import pytesseract
+from elasticsearch import Elasticsearch
 from pdf2image import convert_from_path
 import pika
 import json
@@ -47,6 +48,31 @@ def send_result_to_queue(document_id, text):
     except Exception as e:
         print(f"Failed to send OCR result: {e}")
 
+# Elasticsearch-Client initialisieren
+es = Elasticsearch(
+    hosts=[{
+        'host': Config.ELASTICSEARCH_HOST,
+        'port': Config.ELASTICSEARCH_PORT,
+        'scheme': 'http'  # Verwende das HTTP-Protokoll
+    }]
+)
+
+def index_document(document_id, title, ocr_text):
+    """
+    Indexiert ein Dokument in Elasticsearch.
+    """
+    try:
+        document = {
+            "documentId": document_id,
+            "title": title,
+            "ocrText": ocr_text
+        }
+        # Indexiere das Dokument
+        es.index(index="documents", id=document_id, body=document)
+        print(f"Document indexed successfully in Elasticsearch: {document_id}")
+    except Exception as e:
+        print(f"Failed to index document in Elasticsearch: {e}")
+
 def process_ocr(pdf_path, page_count=None, document_id=None):
     """
     Führt OCR auf der angegebenen PDF-Datei durch.
@@ -76,6 +102,7 @@ def process_ocr(pdf_path, page_count=None, document_id=None):
         # Sende das Ergebnis an die RESULT_QUEUE
         if document_id:
             send_result_to_queue(document_id, full_text)
+            index_document(document_id, pdf_path, full_text)
 
     except Exception as e:
         print(f"Error during OCR processing: {e}")

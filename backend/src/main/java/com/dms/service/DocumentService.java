@@ -87,7 +87,7 @@ public class DocumentService {
         return documentRepo.findById(id).map(document -> {
             document.setTitle(updatedDocument.getTitle());
             document.setFileUrl(updatedDocument.getFileUrl());
-            document.setContent(updatedDocument.getDescription());
+            document.setContent(updatedDocument.getContent());
             document.setPageCount(updatedDocument.getPageCount());
             return documentMapper.toDTO(documentRepo.save(document));
         }).orElse(null);

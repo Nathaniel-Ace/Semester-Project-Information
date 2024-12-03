@@ -1,24 +1,30 @@
 package com.dms.api;
 
 import com.dms.exception.DocumentStorageException;
+import com.dms.service.DocumentSearchService;
 import com.dms.service.DocumentService;
+import com.dms.service.ElasticsearchTestService;
+import com.dms.service.dto.DocumentSearchDTO;
+import com.dms.service.dto.DocumentDTO;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.dms.service.dto.DocumentDTO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/documents")
 @CrossOrigin(origins = "http://localhost") // Erlaubt nur Anfragen von diesem Origin
 public class DocumentController {
-    private final DocumentService documentService;
 
-    private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
+    private final DocumentService documentService;
+    private final DocumentSearchService documentSearchService;
+
+    private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
 
     @PostMapping("/upload")
     public ResponseEntity<DocumentDTO> saveDocument(
@@ -47,29 +53,28 @@ public class DocumentController {
         }
     }
 
-
-
     @GetMapping("/find/all")
-    public ResponseEntity<Iterable<DocumentDTO>> findAllDocuments() {
-        return ResponseEntity.ok(documentService.findAllDocuments());
+    public ResponseEntity<List<DocumentSearchDTO>> findAllDocuments() {
+        // Über DocumentSearchService suchen
+        return ResponseEntity.ok(documentSearchService.findAllDocuments());
     }
-
 
     @GetMapping("/find/{id}")
-    public ResponseEntity<DocumentDTO> findDocumentById(@PathVariable Long id) {
-        return ResponseEntity.ok(documentService.findDocumentById(id));
+    public ResponseEntity<DocumentSearchDTO> findDocumentById(@PathVariable Long id) {
+        // Über DocumentSearchService suchen
+        return ResponseEntity.ok(documentSearchService.findDocumentById(id));
     }
 
-    @GetMapping("/find/{name}")
-    public ResponseEntity<DocumentDTO> findDocumentByName(@PathVariable String name) {
-        return ResponseEntity.ok(documentService.findDocumentByName(name));
+    @GetMapping("/search")
+    public ResponseEntity<List<DocumentSearchDTO>> searchDocuments(@RequestParam String query) {
+        // Suche in Elasticsearch nach OCR-Text und Titeln
+        return ResponseEntity.ok(documentSearchService.searchDocuments(query));
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<DocumentDTO> updateDocument(@PathVariable Long id, @RequestBody DocumentDTO updatedDocument) {
         return ResponseEntity.ok(documentService.updateDocument(id, updatedDocument));
     }
-
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable Long id) {
@@ -79,5 +84,13 @@ public class DocumentController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private final ElasticsearchTestService elasticsearchTestService;
+
+    @GetMapping("/test-elasticsearch")
+    public ResponseEntity<String> testElasticsearchConnection() {
+        String result = elasticsearchTestService.testConnection();
+        return ResponseEntity.ok(result);
     }
 }
