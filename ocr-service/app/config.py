@@ -15,6 +15,10 @@ class Config:
     MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
     MINIO_BUCKET = os.getenv("MINIO_BUCKET")
 
+    # Elasticsearch
+    ELASTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST")
+    ELASTICSEARCH_PORT = int(os.getenv("ELASTICSEARCH_PORT", 9200))
+
     # OCR Temporary Directory
     TEMP_DIR = os.getenv("TEMP_DIR", "/tmp/ocr_temp")
 
