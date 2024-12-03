@@ -7,6 +7,32 @@ import pika
 from config import Config
 from ocr import process_ocr
 
+def wait_for_queue(queue_name):
+    """
+    Wartet, bis die angegebene Queue existiert.
+    """
+    while True:
+        try:
+            credentials = pika.PlainCredentials(Config.RABBITMQ_USERNAME, Config.RABBITMQ_PASSWORD)
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=Config.RABBITMQ_HOST,
+                    port=Config.RABBITMQ_PORT,
+                    credentials=credentials,
+                )
+            )
+            channel = connection.channel()
+            channel.queue_declare(queue=queue_name, passive=True)  # Prüft, ob die Queue existiert
+            print(f"Queue '{queue_name}' is ready.")
+            connection.close()
+            break
+        except pika.exceptions.ChannelClosedByBroker:
+            print(f"Queue '{queue_name}' does not exist yet. Retrying...")
+            time.sleep(2)
+        except Exception as e:
+            print(f"Error while checking queue '{queue_name}': {e}")
+            time.sleep(2)
+
 
 def download_pdf_from_minio(file_url, bucket_name):
     """
@@ -139,6 +165,7 @@ class QueueListener:
 if __name__ == "__main__":
     try:
         print("Starting QueueListener...")
+        wait_for_queue(Config.OCR_QUEUE)
         listener = QueueListener()
         listener.start()
     except Exception as e:
