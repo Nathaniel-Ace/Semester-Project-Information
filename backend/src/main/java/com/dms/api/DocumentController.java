@@ -18,11 +18,12 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/documents")
-@CrossOrigin(origins = "http://localhost") // Erlaubt nur Anfragen von diesem Origin
+@CrossOrigin(origins = "http://localhost")
 public class DocumentController {
 
     private final DocumentService documentService;
     private final DocumentSearchService documentSearchService;
+    private final ElasticsearchTestService elasticsearchTestService;
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
 
@@ -30,11 +31,11 @@ public class DocumentController {
     public ResponseEntity<DocumentDTO> saveDocument(
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
-            @RequestParam("pageCount") int pageCount) { // Neuer Parameter pageCount
+            @RequestParam("pageCount") int pageCount) {
 
         DocumentDTO documentDTO = new DocumentDTO();
         documentDTO.setTitle(title);
-        documentDTO.setPageCount(pageCount); // Seitenanzahl hinzufügen
+        documentDTO.setPageCount(pageCount);
 
         logger.info("Saving document with title: {} and page count: {}", title, pageCount);
 
@@ -85,8 +86,6 @@ public class DocumentController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    private final ElasticsearchTestService elasticsearchTestService;
 
     @GetMapping("/test-elasticsearch")
     public ResponseEntity<String> testElasticsearchConnection() {

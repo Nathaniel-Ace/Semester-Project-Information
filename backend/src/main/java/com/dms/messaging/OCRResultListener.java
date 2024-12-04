@@ -1,6 +1,6 @@
 package com.dms.messaging;
 
-import com.dms.service.DocumentService;
+import com.dms.service.impl.DocumentServiceImpl;
 import com.dms.service.dto.OCRResultDTO;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class OCRResultListener {
 
-    private final DocumentService documentService;
+    private final DocumentServiceImpl documentService;
 
-    public OCRResultListener(DocumentService documentService) {
+    public OCRResultListener(DocumentServiceImpl documentService) {
         this.documentService = documentService;
     }
 
