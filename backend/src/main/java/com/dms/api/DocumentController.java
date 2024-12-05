@@ -56,25 +56,45 @@ public class DocumentController {
 
     @GetMapping("/find/all")
     public ResponseEntity<List<DocumentSearchDTO>> findAllDocuments() {
-        // Über DocumentSearchService suchen
-        return ResponseEntity.ok(documentSearchService.findAllDocuments());
+        try {
+            logger.info("Finding all documents");
+            return ResponseEntity.ok(documentSearchService.findAllDocuments());
+        } catch (Exception e) {
+            logger.error("Error finding all documents: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to find all documents", e);
+        }
     }
 
     @GetMapping("/find/{id}")
     public ResponseEntity<DocumentSearchDTO> findDocumentById(@PathVariable Long id) {
-        // Über DocumentSearchService suchen
-        return ResponseEntity.ok(documentSearchService.findDocumentById(id));
+        try {
+            logger.info("Finding document by id: {}", id);
+            return ResponseEntity.ok(documentSearchService.findDocumentById(id));
+        } catch (Exception e) {
+            logger.error("Error finding document by id: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to find document by id", e);
+        }
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<DocumentSearchDTO>> searchDocuments(@RequestParam String query) {
-        // Suche in Elasticsearch nach OCR-Text und Titeln
-        return ResponseEntity.ok(documentSearchService.searchDocuments(query));
+        try {
+            logger.info("Searching documents with query: {}", query);
+            return ResponseEntity.ok(documentSearchService.searchDocuments(query));
+        } catch (Exception e) {
+            logger.error("Error searching documents: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to search documents", e);
+        }
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<DocumentDTO> updateDocument(@PathVariable Long id, @RequestBody DocumentDTO updatedDocument) {
-        return ResponseEntity.ok(documentService.updateDocument(id, updatedDocument));
+        try {
+            return ResponseEntity.ok(documentService.updateDocument(id, updatedDocument));
+        } catch (Exception e) {
+            logger.error("Error updating document: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to update document", e);
+        }
     }
 
     @DeleteMapping("/delete/{id}")
@@ -83,13 +103,22 @@ public class DocumentController {
             documentService.deleteDocumentById(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
+            logger.error("Error deleting document: {}", e.getMessage());
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error("Error deleting document: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to delete document", e);
         }
     }
 
     @GetMapping("/test-elasticsearch")
     public ResponseEntity<String> testElasticsearchConnection() {
-        String result = elasticsearchTestService.testConnection();
-        return ResponseEntity.ok(result);
+        try {
+            String result = elasticsearchTestService.testConnection();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            logger.error("Error testing Elasticsearch connection: {}", e.getMessage());
+            throw new DocumentStorageException("Failed to test Elasticsearch connection", e);
+        }
     }
 }
