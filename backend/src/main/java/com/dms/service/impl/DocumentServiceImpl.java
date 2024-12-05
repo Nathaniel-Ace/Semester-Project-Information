@@ -1,5 +1,6 @@
 package com.dms.service.impl;
 
+import com.dms.exception.DocumentStorageException;
 import com.dms.messaging.MessageProducer;
 import com.dms.messaging.OCRJobProducer;
 import com.dms.persistence.entity.Document;
@@ -28,15 +29,19 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public void processOCRJob(DocumentDTO documentDTO) {
-        // OCRJobDTO erstellen
-        OCRJobDTO ocrJobDTO = new OCRJobDTO();
-        ocrJobDTO.setDocumentId(documentDTO.getId());
-        ocrJobDTO.setDocumentTitle(documentDTO.getTitle());
-        ocrJobDTO.setFileUrl(documentDTO.getFileUrl());
-        ocrJobDTO.setPageCount(documentDTO.getPageCount());
+        try {
+            // OCRJobDTO erstellen
+            OCRJobDTO ocrJobDTO = new OCRJobDTO();
+            ocrJobDTO.setDocumentId(documentDTO.getId());
+            ocrJobDTO.setDocumentTitle(documentDTO.getTitle());
+            ocrJobDTO.setFileUrl(documentDTO.getFileUrl());
+            ocrJobDTO.setPageCount(documentDTO.getPageCount());
 
-        // OCR-Job an RabbitMQ senden
-        ocrJobProducer.sendOCRJob("OCR_QUEUE", ocrJobDTO);
+            // OCR-Job an RabbitMQ senden
+            ocrJobProducer.sendOCRJob("OCR_QUEUE", ocrJobDTO);
+        } catch (Exception e) {
+            throw new DocumentStorageException("Failed to process OCR job", e);
+        }
     }
 
     @Override
@@ -89,25 +94,33 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public DocumentDTO updateDocument(Long id, DocumentDTO updatedDocument) {
-        return documentRepo.findById(id).map(document -> {
-            document.setTitle(updatedDocument.getTitle());
-            document.setFileUrl(updatedDocument.getFileUrl());
-            document.setContent(updatedDocument.getContent());
-            document.setPageCount(updatedDocument.getPageCount());
-            return documentMapper.toDTO(documentRepo.save(document));
-        }).orElse(null);
+        try {
+            return documentRepo.findById(id).map(document -> {
+                document.setTitle(updatedDocument.getTitle());
+                document.setFileUrl(updatedDocument.getFileUrl());
+                document.setContent(updatedDocument.getContent());
+                document.setPageCount(updatedDocument.getPageCount());
+                return documentMapper.toDTO(documentRepo.save(document));
+            }).orElse(null);
+        } catch (Exception e) {
+            throw new DocumentStorageException("Failed to update document", e);
+        }
     }
 
     @Override
     public void updateDocumentContent(Long documentId, String ocrText) {
-        documentRepo.findById(documentId).ifPresentOrElse(document -> {
-            document.setContent(ocrText);
-            document.setUpdatedAt(LocalDateTime.now()); // Aktualisiere updatedAt
-            documentRepo.save(document);
-            System.out.println("Document content updated successfully for ID: " + documentId);
-        }, () -> {
-            System.err.println("Document with ID " + documentId + " not found.");
-        });
+        try {
+            documentRepo.findById(documentId).ifPresentOrElse(document -> {
+                document.setContent(ocrText);
+                document.setUpdatedAt(LocalDateTime.now());
+                documentRepo.save(document);
+                System.out.println("Document content updated successfully for ID: " + documentId);
+            }, () -> {
+                throw new DocumentStorageException("Document with ID " + documentId + " not found.");
+            });
+        } catch (Exception e) {
+            throw new DocumentStorageException("Failed to update document content", e);
+        }
     }
 
     @Override
