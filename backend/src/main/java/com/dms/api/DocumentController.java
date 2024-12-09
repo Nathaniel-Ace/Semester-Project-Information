@@ -41,9 +41,11 @@ public class DocumentController {
 
         try {
             // Datei speichern
+            logger.info("Saving document file: {}", file.getOriginalFilename());
             DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
 
             // OCR-Job initiieren
+            logger.info("Initiating OCR job for document: {}", savedDocument.getId());
             documentService.processOCRJob(savedDocument);
 
             logger.info("Document saved successfully with page count: {}", pageCount);

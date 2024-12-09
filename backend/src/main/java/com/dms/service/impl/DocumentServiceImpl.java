@@ -1,5 +1,6 @@
 package com.dms.service.impl;
 
+import com.dms.api.DocumentController;
 import com.dms.exception.DocumentStorageException;
 import com.dms.messaging.MessageProducer;
 import com.dms.messaging.OCRJobProducer;
@@ -11,6 +12,8 @@ import com.dms.service.dto.OCRJobDTO;
 import com.dms.service.mapper.DocumentMapper;
 import com.dms.service.dto.DocumentDTO;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +23,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Service
 public class DocumentServiceImpl implements DocumentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DocumentServiceImpl.class);
 
     private final DocumentMapper documentMapper;
     private final DocumentRepo documentRepo;
@@ -54,24 +59,30 @@ public class DocumentServiceImpl implements DocumentService {
             String contentType = file.getContentType();
 
             String bucketName = "mindease-bucket";
+            logger.info("Uploading file to MinIO: {}", fileName);
             minioService.uploadFile(bucketName, fileName, inputStream, fileSize, contentType);
 
             // 2. URL für den Zugriff auf die hochgeladene Datei generieren
             String fileUrl = String.format("http://localhost:9000/%s/%s", bucketName, fileName);
+            logger.info("File uploaded successfully to MinIO: {}", fileUrl);
             documentDTO.setFileUrl(fileUrl);
 
             // 3. DTO in Entity konvertieren und in der Datenbank speichern
+            logger.info("Saving document to database: {}", documentDTO.getTitle());
             Document document = documentMapper.toEntity(documentDTO);
             Document savedDocument = documentRepo.save(document);
 
             // 4. RabbitMQ-Nachricht vorbereiten
+            logger.info("Preparing message for RabbitMQ: {}", savedDocument.getTitle());
             String message = String.format("Document uploaded: [ID: %d, Title: %s, Pages: %d]",
                     savedDocument.getId(), savedDocument.getTitle(), documentDTO.getPageCount());
 
             // 5. Nachricht an RabbitMQ senden
+            logger.info("Sending message to RabbitMQ: {}", message);
             messageProducer.sendMessage("documentExchange", "documentRoutingKey", message);
 
             // 6. Gespeichertes Dokument als DTO zurückgeben
+            logger.info("Document saved successfully: {}", savedDocument.getTitle());
             return documentMapper.toDTO(savedDocument);
 
         } catch (Exception e) {
