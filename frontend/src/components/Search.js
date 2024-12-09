@@ -5,6 +5,7 @@ function Search() {
     const [query, setQuery] = useState('');
     const [searchMode, setSearchMode] = useState('all');
     const [results, setResults] = useState([]);
+    const [lastSearchMode, setLastSearchMode] = useState('all'); // Neuer State, um den letzten Suchmodus zu speichern
 
     const handleSearch = async () => {
         let url = '';
@@ -29,6 +30,7 @@ function Search() {
             if (response.ok) {
                 const data = await response.json();
                 setResults(Array.isArray(data) ? data : [data]);
+                setLastSearchMode(searchMode); // Suchmodus speichern, der zuletzt verwendet wurde
             } else {
                 alert('Error fetching search results. Please try again.');
             }
@@ -36,6 +38,10 @@ function Search() {
             console.error('Error:', error);
             alert('An error occurred while searching.');
         }
+    };
+
+    const cleanTitle = (title) => {
+        return title ? title.replace('/tmp/', '') : 'Untitled Document';
     };
 
     return (
@@ -52,7 +58,13 @@ function Search() {
                 </select>
                 <input
                     type="text"
-                    placeholder={searchMode === 'byId' ? 'Enter Document ID...' : 'Enter search term...'}
+                    placeholder={
+                        searchMode === 'all'
+                            ? ''
+                            : searchMode === 'byId'
+                                ? 'Enter Document ID...'
+                                : 'Enter search term...'
+                    }
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={searchMode === 'all'}
@@ -66,12 +78,11 @@ function Search() {
                     results.map((result, index) => (
                         <div key={index} className="result-card">
                             <div className="result-content">
-                                <h3>{result.title || `Document ID: ${result.id}`}</h3>
-                                <p>{result.ocrText || 'No OCR text available.'}</p>
+                                <h3>{cleanTitle(result.title)}</h3>
+                                {lastSearchMode !== 'all' && (
+                                    <p>{result.ocrText || 'No OCR text available.'}</p>
+                                )}
                                 <small>Document ID: {result.id}</small>
-                            </div>
-                            <div className="result-actions">
-
                             </div>
                         </div>
                     ))
