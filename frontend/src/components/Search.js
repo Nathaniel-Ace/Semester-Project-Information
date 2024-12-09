@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import './Search.css';
 
 function Search() {
-    const [query, setQuery] = useState(''); // Speichert den Suchbegriff oder die ID
-    const [searchMode, setSearchMode] = useState('all'); // Modus der Suche: all, byId, fulltext
+    const [query, setQuery] = useState('');
+    const [searchMode, setSearchMode] = useState('all');
     const [results, setResults] = useState([]);
+    const [lastSearchMode, setLastSearchMode] = useState('all'); // Neuer State, um den letzten Suchmodus zu speichern
 
     const handleSearch = async () => {
         let url = '';
-
         if (searchMode === 'all') {
             url = 'http://localhost:8080/api/v1/documents/find/all';
         } else if (searchMode === 'byId') {
@@ -28,8 +29,8 @@ function Search() {
             const response = await fetch(url);
             if (response.ok) {
                 const data = await response.json();
-                // Backend sendet entweder ein Objekt (bei findById) oder eine Liste (bei anderen)
                 setResults(Array.isArray(data) ? data : [data]);
+                setLastSearchMode(searchMode); // Suchmodus speichern, der zuletzt verwendet wurde
             } else {
                 alert('Error fetching search results. Please try again.');
             }
@@ -39,11 +40,14 @@ function Search() {
         }
     };
 
+    const cleanTitle = (title) => {
+        return title ? title.replace('/tmp/', '') : 'Untitled Document';
+    };
+
     return (
-        <div className="component-container">
-            <h2>Search Documents</h2>
-            <h1>TEST</h1>
-            <div className="search-controls">
+        <div className="search-container">
+            <div className="search-sidebar">
+                <h2>Search Documents</h2>
                 <select
                     value={searchMode}
                     onChange={(e) => setSearchMode(e.target.value)}
@@ -54,26 +58,34 @@ function Search() {
                 </select>
                 <input
                     type="text"
-                    placeholder={searchMode === 'byId' ? 'Enter Document ID...' : 'Enter search term...'}
+                    placeholder={
+                        searchMode === 'all'
+                            ? ''
+                            : searchMode === 'byId'
+                                ? 'Enter Document ID...'
+                                : 'Enter search term...'
+                    }
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    disabled={searchMode === 'all'} // Deaktiviert das Feld für "Alle Dokumente"
+                    disabled={searchMode === 'all'}
                 />
                 <button className="btn" onClick={handleSearch}>
                     Search
                 </button>
             </div>
-            <div className="results">
+            <div className="search-results">
                 {results.length > 0 ? (
-                    <ul>
-                        {results.map((result, index) => (
-                            <li key={index}>
-                                <h3>{result.title || `Document ID: ${result.id}`}</h3>
-                                <p>{result.ocrText || 'No OCR text available.'}</p>
-                                {result.id && <small>Document ID: {result.id}</small>}
-                            </li>
-                        ))}
-                    </ul>
+                    results.map((result, index) => (
+                        <div key={index} className="result-card">
+                            <div className="result-content">
+                                <h3>{cleanTitle(result.title)}</h3>
+                                {lastSearchMode !== 'all' && (
+                                    <p>{result.ocrText || 'No OCR text available.'}</p>
+                                )}
+                                <small>Document ID: {result.id}</small>
+                            </div>
+                        </div>
+                    ))
                 ) : (
                     <p>No results found.</p>
                 )}

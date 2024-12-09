@@ -22,14 +22,32 @@ function App() {
 
   return (
       <div className="app-background">
+        {/* Fixiertes Banner oben */}
         <header className="app-header">
           <h1>Document Management System</h1>
           <nav>
-            <button onClick={() => setActiveComponent('upload')}>Upload Document</button>
-            <button onClick={() => setActiveComponent('search')}>Search Documents</button>
-            <button onClick={() => setActiveComponent('manage')}>Manage Documents</button>
+            <button
+                className={activeComponent === 'upload' ? 'active' : ''}
+                onClick={() => setActiveComponent('upload')}
+            >
+              Upload Document
+            </button>
+            <button
+                className={activeComponent === 'search' ? 'active' : ''}
+                onClick={() => setActiveComponent('search')}
+            >
+              Search Documents
+            </button>
+            <button
+                className={activeComponent === 'manage' ? 'active' : ''}
+                onClick={() => setActiveComponent('manage')}
+            >
+              Manage Documents
+            </button>
           </nav>
         </header>
+
+        {/* Hauptinhalt */}
         <main>
           {renderComponent()}
         </main>

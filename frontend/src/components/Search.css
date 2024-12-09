@@ -1,0 +1,110 @@
+.search-container {
+    display: flex;
+    height: calc(100vh - 100px); /* Höhe anpassen für Banner */
+    margin-top: 20px;
+}
+
+.search-sidebar {
+    width: 25%;
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-right: 2px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.search-sidebar h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.search-sidebar select,
+.search-sidebar input,
+.search-sidebar button {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search-results {
+    width: 75%;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: white; /* Weißer Hintergrund */
+    border-radius: 10px; /* Abgerundete Ecken */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+    margin: 20px; /* Abstand zu anderen Elementen */
+    min-height: 100px; /* Mindesthöhe, damit der Hintergrund immer sichtbar ist */
+    justify-content: center; /* Horizontal zentriert */
+}
+
+.result-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.result-content h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.result-content p {
+    margin: 10px 0;
+    color: #666;
+}
+
+.result-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.result-actions .btn {
+    margin: 5px 0;
+    padding: 10px;
+    font-size: 1.2rem;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.result-actions .btn:hover {
+    background-color: #0056b3;
+}
+
+.result-actions .check-btn {
+    background-color: #28a745;
+}
+
+.result-actions .check-btn:hover {
+    background-color: #218838;
+}
+
+.result-actions .next-btn {
+    background-color: #ffc107;
+}
+
+.result-actions .next-btn:hover {
+    background-color: #e0a800;
+}
