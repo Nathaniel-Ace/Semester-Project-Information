@@ -1,11 +1,8 @@
 package com.dms.service.mapper;
 
-import com.dms.logs.LoggingUtil;
 import com.dms.service.dto.DocumentDTO;
 import com.dms.persistence.entity.Document;
 import org.mapstruct.Mapper;
-
- // LoggingUtil importieren
 
 import java.util.List;
 
