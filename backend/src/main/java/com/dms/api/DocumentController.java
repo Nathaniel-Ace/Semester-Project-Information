@@ -33,91 +33,107 @@ public class DocumentController {
             @RequestParam("title") String title,
             @RequestParam("pageCount") int pageCount) {
 
+        long startTime = System.currentTimeMillis(); // Startzeit messen
+        logger.info("Initiating document upload: title={}, pageCount={}", title, pageCount); // Eingangslog
+
         DocumentDTO documentDTO = new DocumentDTO();
         documentDTO.setTitle(title);
         documentDTO.setPageCount(pageCount);
 
-        logger.info("Saving document with title: {} and page count: {}", title, pageCount);
-
         try {
             // Datei speichern
             DocumentDTO savedDocument = documentService.saveDocument(documentDTO, file);
+            logger.debug("Document {} successfully saved in database", savedDocument.getId()); // Erfolgsmeldung nach Datenbank-Speicherung
 
             // OCR-Job initiieren
             documentService.processOCRJob(savedDocument);
+            logger.info("OCR job successfully initiated for document {}", savedDocument.getId()); // Erfolgsmeldung für OCR-Job
 
-            logger.info("Document saved successfully with page count: {}", pageCount);
+            logger.info("Document upload completed in {} ms", System.currentTimeMillis() - startTime); // Performance-Log
             return ResponseEntity.ok(savedDocument);
         } catch (Exception e) {
-            logger.error("Error saving document: {}", e.getMessage());
+            logger.error("Error occurred while saving document: {}", e.getMessage(), e); // Fehler-Log
             throw new DocumentStorageException("Failed to save document", e);
         }
     }
 
     @GetMapping("/find/all")
     public ResponseEntity<List<DocumentSearchDTO>> findAllDocuments() {
+        logger.info("Fetching all documents from the database"); // Eingangslog
         try {
-            logger.info("Finding all documents");
-            return ResponseEntity.ok(documentSearchService.findAllDocuments());
+            List<DocumentSearchDTO> documents = documentSearchService.findAllDocuments();
+            logger.info("Successfully fetched {} documents", documents.size()); // Erfolgsmeldung mit Anzahl der Dokumente
+            return ResponseEntity.ok(documents);
         } catch (Exception e) {
-            logger.error("Error finding all documents: {}", e.getMessage());
-            throw new DocumentStorageException("Failed to find all documents", e);
+            logger.error("Error fetching documents: {}", e.getMessage(), e); // Fehler-Log
+            throw new DocumentStorageException("Failed to fetch documents", e);
         }
     }
 
     @GetMapping("/find/{id}")
     public ResponseEntity<DocumentSearchDTO> findDocumentById(@PathVariable Long id) {
+        logger.info("Fetching document with ID: {}", id); // Eingangslog
         try {
-            logger.info("Finding document by id: {}", id);
-            return ResponseEntity.ok(documentSearchService.findDocumentById(id));
+            DocumentSearchDTO document = documentSearchService.findDocumentById(id);
+            logger.debug("Document fetched successfully: {}", document); // Detail-Log bei erfolgreichem Abruf
+            return ResponseEntity.ok(document);
         } catch (Exception e) {
-            logger.error("Error finding document by id: {}", e.getMessage());
-            throw new DocumentStorageException("Failed to find document by id", e);
+            logger.error("Error fetching document with ID {}: {}", id, e.getMessage(), e); // Fehler-Log
+            throw new DocumentStorageException("Failed to fetch document", e);
         }
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<DocumentSearchDTO>> searchDocuments(@RequestParam String query) {
+        logger.info("Searching documents with query: {}", query); // Eingangslog
         try {
-            logger.info("Searching documents with query: {}", query);
-            return ResponseEntity.ok(documentSearchService.searchDocuments(query));
+            List<DocumentSearchDTO> results = documentSearchService.searchDocuments(query);
+            logger.info("Search completed with {} results", results.size()); // Erfolgsmeldung mit Anzahl der Ergebnisse
+            return ResponseEntity.ok(results);
         } catch (Exception e) {
-            logger.error("Error searching documents: {}", e.getMessage());
+            logger.error("Error during document search: {}", e.getMessage(), e); // Fehler-Log
             throw new DocumentStorageException("Failed to search documents", e);
         }
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<DocumentDTO> updateDocument(@PathVariable Long id, @RequestBody DocumentDTO updatedDocument) {
+        logger.info("Updating document with ID: {}", id); // Eingangslog
         try {
-            return ResponseEntity.ok(documentService.updateDocument(id, updatedDocument));
+            DocumentDTO updated = documentService.updateDocument(id, updatedDocument);
+            logger.info("Document {} updated successfully", id); // Erfolgsmeldung
+            return ResponseEntity.ok(updated);
         } catch (Exception e) {
-            logger.error("Error updating document: {}", e.getMessage());
+            logger.error("Error updating document with ID {}: {}", id, e.getMessage(), e); // Fehler-Log
             throw new DocumentStorageException("Failed to update document", e);
         }
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteDocumentById(@PathVariable Long id) {
+        logger.warn("Attempting to delete document with ID: {}", id); // Warnung vor Löschaktion
         try {
             documentService.deleteDocumentById(id);
+            logger.info("Document {} deleted successfully", id); // Erfolgsmeldung
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            logger.error("Error deleting document: {}", e.getMessage());
+            logger.warn("Document with ID {} not found: {}", id, e.getMessage()); // Warnung bei nicht vorhandenem Dokument
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            logger.error("Error deleting document: {}", e.getMessage());
+            logger.error("Error deleting document with ID {}: {}", id, e.getMessage(), e); // Fehler-Log
             throw new DocumentStorageException("Failed to delete document", e);
         }
     }
 
     @GetMapping("/test-elasticsearch")
     public ResponseEntity<String> testElasticsearchConnection() {
+        logger.info("Testing Elasticsearch connection"); // Eingangslog
         try {
             String result = elasticsearchTestService.testConnection();
+            logger.info("Elasticsearch connection successful: {}", result); // Erfolgsmeldung
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logger.error("Error testing Elasticsearch connection: {}", e.getMessage());
+            logger.error("Error testing Elasticsearch connection: {}", e.getMessage(), e); // Fehler-Log
             throw new DocumentStorageException("Failed to test Elasticsearch connection", e);
         }
     }
