@@ -11,26 +11,39 @@ body, html {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  height: 100vh;
-  width: 100%;
+  min-height: 100vh; /* Statt fixierter Höhe */
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* Zentriert den Inhalt vertikal und horizontal */
-  text-align: center; /* Zentriert den Text in der Mitte */
-  padding: 20px;
+  flex-direction: column; /* Vertikale Anordnung */
+  align-items: stretch;
+  text-align: center;
+  padding-top: 60px; /* Platz für den Header */
 }
 
+
 .app-header {
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 30px;
-  width: 80%;
-  max-width: 700px;
+  background-color: #333; /* Banner-Hintergrundfarbe */
+  padding: 10px; /* Weniger Padding */
+  width: 100%; /* Volle Breite */
   color: white;
   text-align: center;
-  border-radius: 10px;
-  margin-bottom: 40px;
+  position: fixed; /* Fixiertes Banner */
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  font-size: 0.9rem; /* Kleinere Schriftgröße */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optionaler Schatten */
 }
+
+.app-header h1 {
+  font-size: 1.5rem; /* Kleinere Schriftgröße für den Titel */
+  margin: 0;
+}
+
+/* Der Abstand unter dem Header für die anderen Inhalte */
+main {
+  margin-top: 120px;
+}
+
 
 .app-header h1 {
   font-size: 2.5rem; /* Größerer Text */
@@ -42,8 +55,8 @@ nav {
 
 nav button {
   margin: 10px;
-  padding: 15px 30px; /* Größere Buttons */
-  font-size: 1.25rem; /* Größerer Text für Buttons */
+  padding: 10px 20px; /* Kleinere Buttons */
+  font-size: 0.9rem; /* Kleinere Schrift für Buttons */
   color: white;
   background-color: #007bff;
   border: none;
@@ -55,6 +68,12 @@ nav button {
 nav button:hover {
   background-color: #0056b3;
 }
+
+nav button.active {
+  background-color: #0056b3; /* Andere Farbe für aktiven Button */
+  cursor: default;
+}
+
 
 .component-container {
   background-color: rgba(255, 255, 255, 0.9);
@@ -96,3 +115,4 @@ input[type="text"] {
 .btn:hover {
   background-color: #0056b3;
 }
+
